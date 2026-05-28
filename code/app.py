@@ -19,7 +19,8 @@ HF_TOKEN = os.getenv("HF_TOKEN")
 # Initialize your models, databases, and other components here
 @st.cache_resource
 def init_vectorstore():
-    persist_directory = "chroma_db"
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    persist_directory = os.path.join(current_dir, "chroma_db")
     embeddings = HuggingFaceEmbeddings(
         model_name="sentence-transformers/all-mpnet-base-v2"
     )

@@ -2,10 +2,7 @@
 import os
 import streamlit as st
 from langchain_community.document_loaders import TextLoader, PyPDFLoader
-try:
-    from langchain.text_splitter import CharacterTextSplitter
-except ModuleNotFoundError:
-    from langchain_classic.text_splitter import CharacterTextSplitter
+from langchain.text_splitter import CharacterTextSplitter
 from app import vectorstore
 
 
@@ -15,8 +12,9 @@ st.title("Document Management")
 uploaded_file = st.file_uploader("Choose a file", type=["txt", "pdf"])
 
 if uploaded_file is not None:
-    # Create a temporary directory to store the uploaded file
-    temp_dir = "temp_uploads"
+    # Create a temporary directory relative to this file to store the uploaded file
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    temp_dir = os.path.join(current_dir, "temp_uploads")
     os.makedirs(temp_dir, exist_ok=True)
     file_path = os.path.join(temp_dir, uploaded_file.name)
     
