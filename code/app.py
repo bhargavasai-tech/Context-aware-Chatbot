@@ -85,12 +85,7 @@ def rag_query(query):
         if not context or len(response.split()) < 3 or not retrieved_docs:
             response = client.text_generation(query, max_new_tokens=200).strip()
     except Exception as e:
-        if "NameResolutionError" in str(e) or "Failed to resolve" in str(e) or "ConnectionError" in str(e):
-            return "⚠️ Connection Error: Failed to connect to the Hugging Face API. Please make sure you are connected to the internet and that 'api-inference.huggingface.co' is not blocked by your network/firewall."
-        elif "Authorization" in str(e) or "Unauthorized" in str(e) or "401" in str(e) or "403" in str(e):
-            return "🔑 Authentication Error: Your Hugging Face / Mistral token (HF_TOKEN) is invalid or expired. Please check your `.env` file and update your token."
-        else:
-            return f"⚠️ An error occurred while communicating with the AI model: {e}"
+        return f"⚠️ Hugging Face API Error: {str(e)}\n\n*(Error details: `{type(e).__name__}`)*"
 
     # Append the response to memory
     memory.chat_memory.add_ai_message(response)
