@@ -12,3 +12,4 @@ __pycache__/
 code/temp_uploads/
 code/__pycache__/
 code/pages/__pycache__/
+code/chroma_db/
