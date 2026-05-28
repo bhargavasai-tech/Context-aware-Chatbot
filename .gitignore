@@ -1,0 +1,14 @@
+# Python cache
+__pycache__/
+*.pyc
+
+# Local environment variables and secrets
+.env
+
+# Streamlit config and secrets (ignored for public sharing)
+.streamlit/secrets.toml
+
+# Temp uploads and databases
+code/temp_uploads/
+code/__pycache__/
+code/pages/__pycache__/
