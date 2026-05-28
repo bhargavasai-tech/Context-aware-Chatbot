@@ -14,7 +14,10 @@ load_dotenv()
 st.set_page_config(page_title="RAG Chatbot", page_icon="🤖", layout="wide")
 
 # Set your Hugging Face token here
-HF_TOKEN = os.getenv("HF_TOKEN")
+try:
+    HF_TOKEN = st.secrets["HUGGINGFACEHUB_API_TOKEN"]
+except Exception:
+    HF_TOKEN = os.getenv("HUGGINGFACEHUB_API_TOKEN") or os.getenv("HF_TOKEN")
 
 # Initialize your models, databases, and other components here
 @st.cache_resource
@@ -32,7 +35,11 @@ def init_vectorstore():
     return vectorstore
 
 # Initialize components
-client = InferenceClient("mistralai/Mistral-7B-Instruct-v0.3", token=HF_TOKEN)
+client = InferenceClient(
+    model="google/flan-t5-large",
+    token=HF_TOKEN,
+    timeout=120
+)
 vectorstore = init_vectorstore()
 
 def rag_query(query):
@@ -68,22 +75,15 @@ def rag_query(query):
     # st.write("Past Interactions:", past_interactions)
 
     try:
-        # Generate response using LLaMA
-        messages = [
-            {"role": "user", "content": f"Context: {context_with_memory}\n\nQuestion: {query},it is not mandatory to use the context\n\nAnswer:"}
-        ]
+        # Generate response using flan-t5-large
+        prompt = f"Context: {context_with_memory}\n\nQuestion: {query}\n\nAnswer:"
 
         # Get the response from the client
-        response_content = client.chat_completion(messages=messages, max_tokens=500, stream=False)
-
-        # Process the response content
-        response = response_content.choices[0].message.content.split("Answer:")[-1].strip()
+        response = client.text_generation(prompt, max_new_tokens=200).strip()
 
         # If the response is empty or very short, or if no relevant documents were found, use the LLM's default knowledge
-        if not context or len(response.split()) < 35 or not retrieved_docs:
-            messages = [{"role": "user", "content": query}]
-            response_content = client.chat_completion(messages=messages, max_tokens=500, stream=False)
-            response = response_content.choices[0].message.content
+        if not context or len(response.split()) < 3 or not retrieved_docs:
+            response = client.text_generation(query, max_new_tokens=200).strip()
     except Exception as e:
         if "NameResolutionError" in str(e) or "Failed to resolve" in str(e) or "ConnectionError" in str(e):
             return "⚠️ Connection Error: Failed to connect to the Hugging Face API. Please make sure you are connected to the internet and that 'api-inference.huggingface.co' is not blocked by your network/firewall."
@@ -111,7 +111,7 @@ if __name__ == "__main__":
     st.title("Welcome to our RAG-Based Chatbot")
     st.markdown("***")
     st.info('''
-            To use Our Mistral supported Chatbot, click Chat.
+            To use Our AI-powered Chatbot, click Chat.
              
             To push data, click on Store Document.
             ''')
