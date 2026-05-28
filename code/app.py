@@ -2,7 +2,7 @@
 import os
 import time
 import streamlit as st
-from huggingface_hub import InferenceClient
+from groq import Groq
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores import Chroma
 from langchain.memory import ConversationBufferMemory
@@ -14,11 +14,11 @@ load_dotenv()
 # Set page config
 st.set_page_config(page_title="RAG Chatbot", page_icon="🤖", layout="wide")
 
-# Set your Hugging Face token here
+# Set your Groq API key here
 try:
-    HF_TOKEN = st.secrets["HUGGINGFACEHUB_API_TOKEN"]
+    GROQ_API_KEY = st.secrets["GROQ_API_KEY"]
 except Exception:
-    HF_TOKEN = os.getenv("HUGGINGFACEHUB_API_TOKEN") or os.getenv("HF_TOKEN")
+    GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
 # Initialize your models, databases, and other components here
 @st.cache_resource
@@ -36,11 +36,7 @@ def init_vectorstore():
     return vectorstore
 
 # Initialize components
-client = InferenceClient(
-    model="google/flan-t5-large",
-    token=HF_TOKEN,
-    timeout=120
-)
+client = Groq(api_key=GROQ_API_KEY)
 vectorstore = init_vectorstore()
 
 def rag_query(query):
@@ -78,22 +74,36 @@ def rag_query(query):
     # Try up to 3 times to handle temporary DNS/connection errors
     for attempt in range(3):
         try:
-            # Generate response using flan-t5-large
+            # Generate response using llama3-8b-8192
             prompt = f"Context: {context_with_memory}\n\nQuestion: {query}\n\nAnswer:"
 
             # Get the response from the client
-            response = client.text_generation(prompt, max_new_tokens=200).strip()
+            chat_completion = client.chat.completions.create(
+                messages=[
+                    {"role": "user", "content": prompt}
+                ],
+                model="llama3-8b-8192",
+                max_tokens=500
+            )
+            response = chat_completion.choices[0].message.content.strip()
 
             # If the response is empty or very short, or if no relevant documents were found, use the LLM's default knowledge
             if not context or len(response.split()) < 3 or not retrieved_docs:
-                response = client.text_generation(query, max_new_tokens=200).strip()
+                chat_completion = client.chat.completions.create(
+                    messages=[
+                        {"role": "user", "content": query}
+                    ],
+                    model="llama3-8b-8192",
+                    max_tokens=500
+                )
+                response = chat_completion.choices[0].message.content.strip()
             
             # If successful, break out of the retry loop
             break
         except Exception as e:
             if attempt == 2:
                 # On the final attempt, return the error message
-                return f"⚠️ Hugging Face API Error: {str(e)}\n\n*(Error details: `{type(e).__name__}`)*"
+                return f"⚠️ Groq API Error: {str(e)}\n\n*(Error details: `{type(e).__name__}`)*"
             # Sleep for 2 seconds before retrying
             time.sleep(2)
 

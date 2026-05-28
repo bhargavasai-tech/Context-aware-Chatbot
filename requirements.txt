@@ -8,3 +8,4 @@ streamlit==1.36.0
 streamlit_extras==0.4.6
 sentence-transformers
 pypdf
+groq
