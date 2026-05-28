@@ -1,5 +1,6 @@
 #app.py
 import os
+import time
 import streamlit as st
 from huggingface_hub import InferenceClient
 from langchain_community.embeddings import HuggingFaceEmbeddings
@@ -74,18 +75,27 @@ def rag_query(query):
     # st.write("Retrieved Documents:", [doc.page_content for doc in retrieved_docs])
     # st.write("Past Interactions:", past_interactions)
 
-    try:
-        # Generate response using flan-t5-large
-        prompt = f"Context: {context_with_memory}\n\nQuestion: {query}\n\nAnswer:"
+    # Try up to 3 times to handle temporary DNS/connection errors
+    for attempt in range(3):
+        try:
+            # Generate response using flan-t5-large
+            prompt = f"Context: {context_with_memory}\n\nQuestion: {query}\n\nAnswer:"
 
-        # Get the response from the client
-        response = client.text_generation(prompt, max_new_tokens=200).strip()
+            # Get the response from the client
+            response = client.text_generation(prompt, max_new_tokens=200).strip()
 
-        # If the response is empty or very short, or if no relevant documents were found, use the LLM's default knowledge
-        if not context or len(response.split()) < 3 or not retrieved_docs:
-            response = client.text_generation(query, max_new_tokens=200).strip()
-    except Exception as e:
-        return f"⚠️ Hugging Face API Error: {str(e)}\n\n*(Error details: `{type(e).__name__}`)*"
+            # If the response is empty or very short, or if no relevant documents were found, use the LLM's default knowledge
+            if not context or len(response.split()) < 3 or not retrieved_docs:
+                response = client.text_generation(query, max_new_tokens=200).strip()
+            
+            # If successful, break out of the retry loop
+            break
+        except Exception as e:
+            if attempt == 2:
+                # On the final attempt, return the error message
+                return f"⚠️ Hugging Face API Error: {str(e)}\n\n*(Error details: `{type(e).__name__}`)*"
+            # Sleep for 2 seconds before retrying
+            time.sleep(2)
 
     # Append the response to memory
     memory.chat_memory.add_ai_message(response)
