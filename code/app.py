@@ -4,10 +4,7 @@ import streamlit as st
 from huggingface_hub import InferenceClient
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores import Chroma
-try:
-    from langchain.memory import ConversationBufferMemory
-except ModuleNotFoundError:
-    from langchain_classic.memory import ConversationBufferMemory
+from langchain.memory import ConversationBufferMemory
 from dotenv import load_dotenv
 
 # Load environment variables
