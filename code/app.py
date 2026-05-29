@@ -74,7 +74,7 @@ def rag_query(query):
     # Try up to 3 times to handle temporary DNS/connection errors
     for attempt in range(3):
         try:
-            # Generate response using llama3-8b-8192
+            # Generate response using llama-3.1-8b-instant
             prompt = f"Context: {context_with_memory}\n\nQuestion: {query}\n\nAnswer:"
 
             # Get the response from the client
@@ -82,7 +82,7 @@ def rag_query(query):
                 messages=[
                     {"role": "user", "content": prompt}
                 ],
-                model="llama3-8b-8192",
+                model="llama-3.1-8b-instant",
                 max_tokens=500
             )
             response = chat_completion.choices[0].message.content.strip()
@@ -93,7 +93,7 @@ def rag_query(query):
                     messages=[
                         {"role": "user", "content": query}
                     ],
-                    model="llama3-8b-8192",
+                    model="llama-3.1-8b-instant",
                     max_tokens=500
                 )
                 response = chat_completion.choices[0].message.content.strip()
