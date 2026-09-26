@@ -14,11 +14,18 @@ load_dotenv()
 # Set page config
 st.set_page_config(page_title="RAG Chatbot", page_icon="🤖", layout="wide")
 
-# Set your Groq API key here
-try:
-    GROQ_API_KEY = st.secrets["GROQ_API_KEY"]
-except Exception:
-    GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+# Helper function to get fresh Groq client dynamically
+def get_groq_client():
+    key = None
+    try:
+        key = st.secrets["GROQ_API_KEY"]
+    except Exception:
+        key = os.getenv("GROQ_API_KEY")
+    
+    if key:
+        key = key.strip().strip('"').strip("'")
+    
+    return Groq(api_key=key)
 
 # Initialize your models, databases, and other components here
 @st.cache_resource
@@ -35,8 +42,7 @@ def init_vectorstore():
     )
     return vectorstore
 
-# Initialize components
-client = Groq(api_key=GROQ_API_KEY)
+# Initialize vectorstore
 vectorstore = init_vectorstore()
 
 def rag_query(query):
@@ -70,6 +76,9 @@ def rag_query(query):
     # st.write("Context Sent to Model:", context_with_memory)
     # st.write("Retrieved Documents:", [doc.page_content for doc in retrieved_docs])
     # st.write("Past Interactions:", past_interactions)
+
+    # Dynamically get fresh Groq client
+    client = get_groq_client()
 
     # Try up to 3 times to handle temporary DNS/connection errors
     for attempt in range(3):
