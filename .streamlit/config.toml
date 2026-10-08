@@ -1,3 +1,2 @@
 [client]
-toolbarMode = "hidden"
-showErrorDetails = false
+showErrorDetails = true

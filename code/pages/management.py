@@ -5,17 +5,12 @@ from langchain_community.document_loaders import TextLoader, PyPDFLoader
 from langchain.text_splitter import CharacterTextSplitter
 from app import vectorstore
 
-# Hide Streamlit header, footer, GitHub icon, and toolbar
+# Hide Streamlit header, footer, and menu safely
 st.markdown("""
     <style>
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
-    [data-testid="stHeader"] {display: none !important;}
-    [data-testid="stToolbar"] {display: none !important;}
-    [data-testid="stDecoration"] {display: none !important;}
-    [data-testid="stStatusWidget"] {display: none !important;}
-    .stAppHeader {display: none !important;}
     </style>
 """, unsafe_allow_html=True)
 
