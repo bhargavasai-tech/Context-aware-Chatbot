@@ -2,6 +2,20 @@
 import streamlit as st
 from app import rag_query, process_feedback
 
+# Hide Streamlit header, footer, GitHub icon, and toolbar
+st.markdown("""
+    <style>
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+    [data-testid="stHeader"] {display: none !important;}
+    [data-testid="stToolbar"] {display: none !important;}
+    [data-testid="stDecoration"] {display: none !important;}
+    [data-testid="stStatusWidget"] {display: none !important;}
+    .stAppHeader {display: none !important;}
+    </style>
+""", unsafe_allow_html=True)
+
 
 st.title("RAG Chatbot")
 

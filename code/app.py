@@ -14,6 +14,21 @@ load_dotenv()
 # Set page config
 st.set_page_config(page_title="RAG Chatbot", page_icon="🤖", layout="wide")
 
+# Hide Streamlit header, footer, GitHub icon, and toolbar
+hide_css = """
+    <style>
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+    [data-testid="stHeader"] {display: none !important;}
+    [data-testid="stToolbar"] {display: none !important;}
+    [data-testid="stDecoration"] {display: none !important;}
+    [data-testid="stStatusWidget"] {display: none !important;}
+    .stAppHeader {display: none !important;}
+    </style>
+"""
+st.markdown(hide_css, unsafe_allow_html=True)
+
 # Helper function to get fresh Groq client dynamically
 def get_groq_client():
     key = None
